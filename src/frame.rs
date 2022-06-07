@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::default::Default;
 use std::io::Cursor;
+use std::sync::atomic::{self, Ordering};
 
 use crate::error::{self, ClientError};
 
@@ -50,7 +51,7 @@ pub struct Frame {
     flag: i32,
 
     // Human readable remarks
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     remark: String,
 
     #[serde(skip_serializing_if = "HashMap::is_empty", default = "HashMap::new")]
@@ -69,7 +70,26 @@ pub enum Error {
     Other(error::ClientError),
 }
 
+#[derive(Debug, PartialEq)]
+pub enum Type {
+    Request, 
+    Response,
+}
+
 impl Frame {
+    // Generate next opaque, aka, request identifier.
+    fn next_opaque() -> i32 {
+        static SEQUENCE: atomic::AtomicI32 = atomic::AtomicI32::new(0);
+        SEQUENCE.fetch_add(1, Ordering::Relaxed)
+    }
+
+    pub fn new() -> Self {
+        Frame {
+            opaque: Frame::next_opaque(),
+            ..Default::default()
+        }
+    }
+
     pub fn check(src: &mut Cursor<&[u8]>) -> Result<(), Error> {
         // frame-length = 4 + len(header) + len(body)
         // frame-layout |header-length|---header-data---|---body---|
@@ -140,12 +160,30 @@ impl Frame {
     pub fn remark(&self) -> &str {
         self.remark.as_str()
     }
+
+    pub fn frame_type(&self) -> Type {
+        if self.flag & 1 == 1 {
+            return Type::Response;
+        }
+        Type::Request
+    }
+
+    pub fn mark_response_type(&mut self) {
+        self.flag |= 1;
+    }
 }
 
 mod tests {
     use bytes::{Buf, BufMut, BytesMut};
 
-    use super::{Frame, Language};
+    use super::{Frame, Language, Type};
+
+    #[test]
+    fn test_new() {
+        let frame_0 = Frame::new();
+        let frame_1 = Frame::new();
+        assert_eq!(frame_0.opaque < frame_1.opaque, true);
+    }
 
     #[test]
     fn test_deserialization() -> Result<(), Box<dyn std::error::Error>> {
@@ -160,7 +198,7 @@ mod tests {
 
     #[test]
     fn test_serialization() -> Result<(), Box<dyn std::error::Error>> {
-        let mut frame = Frame::default();
+        let mut frame = Frame::new();
         frame
             .ext_fields
             .insert("key".to_string(), "value".to_string());
@@ -184,5 +222,14 @@ mod tests {
         assert_eq!(frame.flag, 0);
         assert_eq!(frame.ext_fields.is_empty(), true);
         Ok(())
+    }
+
+    #[test]
+    fn test_type() {
+        let mut frame = Frame::new();
+        assert_eq!(frame.frame_type(), Type::Request);
+
+        frame.mark_response_type();
+        assert_eq!(frame.frame_type(), Type::Response);
     }
 }

@@ -86,7 +86,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_write_frame() -> Result<(), ClientError> {
-        let mut frame = Frame::default();
+        let mut frame = Frame::new();
         frame.set_code(frame::RequestCode::GetRouteInfoByTopic);
         frame.set_language(crate::frame::Language::CPP);
         frame.put_ext_field("topic", "Test");
@@ -97,9 +97,10 @@ mod tests {
         let mut connection = Connection::new(&endpoint).await?;
         connection.write_frame(&frame).await?;
         if let Some(response) = connection.read_frame().await? {
+            assert_eq!(response.frame_type(), frame::Type::Response);
             println!("Remark: {}", response.remark());
         }
-        
+
         Ok(())
     }
 }
