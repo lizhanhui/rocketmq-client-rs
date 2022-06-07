@@ -72,7 +72,7 @@ pub enum Error {
 
 #[derive(Debug, PartialEq)]
 pub enum Type {
-    Request, 
+    Request,
     Response,
 }
 
