@@ -51,6 +51,72 @@ pub struct TopicRouteData {
     filter_server_table: HashMap<String, Vec<String>>,
 }
 
+#[derive(Debug)]
+pub(crate) struct SendMessageRequestHeader {
+    
+    producer_group: String,
+
+    topic: String,
+
+    default_topic: String,
+
+    default_topic_queue_nums: i32,
+
+    queue_id: i32,
+
+    sys_flag: i32,
+
+    born_timestamp: i64,
+
+    flag: i32,
+    
+    properties: Option<String>,
+
+    reconsume_times: Option<i32>,
+
+    unit_mode: Option<bool>,
+
+    batch: Option<bool>,
+
+    max_reconsume_times: Option<i32>,
+} 
+
+impl From<SendMessageRequestHeader> for HashMap<String, String> {
+
+    fn from(header: SendMessageRequestHeader) -> Self {
+        let mut map = HashMap::new();
+        map.insert("producerGroup".to_owned(), header.producer_group);
+        map.insert("topic".to_owned(), header.topic);
+        map.insert("defaultTopic".to_owned(), header.default_topic);
+        map.insert("defaultTopicQueueNums".to_owned(), format!("{}", header.default_topic_queue_nums));
+        map.insert("queueId".to_owned(), format!("{}", header.queue_id));
+        map.insert("sysFlag".to_owned(), format!("{}", header.sys_flag));
+        map.insert("bornTimestamp".to_owned(), format!("{}", header.born_timestamp));
+        map.insert("flag".to_owned(), format!("{}", header.flag));
+        if let Some(properties) = header.properties {
+            map.insert("properties".to_owned(), properties);
+        }
+
+        if let Some(reconsume_times) = header.reconsume_times {
+            map.insert("reconsumeTimes".to_owned(), format!("{}", reconsume_times));
+        }
+
+        if let Some(unit_mode) = header.unit_mode {
+            map.insert("unitMode".to_owned(), format!("{}", unit_mode));
+        }
+
+        if let Some(batch) = header.batch {
+            map.insert("batch".to_owned(), format!("{}", batch));
+        }
+
+        if let Some(max_reconsume_times) = header.max_reconsume_times {
+            map.insert("maxReconsumeTimes".to_owned(), format!("{}", max_reconsume_times));
+        }
+        
+        map
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

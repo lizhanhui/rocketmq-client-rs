@@ -22,12 +22,14 @@ impl Default for Language {
 
 pub enum RequestCode {
     GetRouteInfoByTopic,
+    SendMessage,
 }
 
 impl From<RequestCode> for i32 {
     fn from(op_code: RequestCode) -> i32 {
         match op_code {
             RequestCode::GetRouteInfoByTopic => 105,
+            RequestCode::SendMessage => 10,
         }
     }
 }
@@ -157,6 +159,10 @@ impl Frame {
         self.code = code.into();
     }
 
+    pub(crate) fn code(&self) -> i32 {
+        self.code
+    }
+
     pub fn remark(&self) -> &str {
         self.remark.as_str()
     }
@@ -171,6 +177,18 @@ impl Frame {
     pub fn mark_response_type(&mut self) {
         self.flag |= 1;
     }
+
+    pub(crate) fn add_ext_headers(&mut self, header: impl Into<HashMap<String, String>>) {
+        let map: HashMap<String, String> = header.into();
+        map.iter().for_each(|(k, v)| {
+            self.put_ext_field(k, v);
+        });
+    }
+
+    pub(crate) fn body(&self) -> bytes::Bytes {
+        self.body.clone()
+    }
+
 }
 
 mod tests {
@@ -232,4 +250,13 @@ mod tests {
         frame.mark_response_type();
         assert_eq!(frame.frame_type(), Type::Response);
     }
+
+    #[test]
+    fn test_add_ext_headers() {
+        let header = crate::protocol::GetRouteInfoRequestHeader::new("Test");
+        let mut frame = Frame::new();
+        frame.add_ext_headers(header);
+        assert_eq!(frame.ext_fields.len(), 1);
+    }
+
 }
