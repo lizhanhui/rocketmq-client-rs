@@ -25,30 +25,32 @@ impl From<GetRouteInfoRequestHeader> for HashMap<String, String> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QueueData {
-    broker_name: String,
-    read_queue_nums: i32,
-    write_queue_nums: i32,
-    perm: i32,
-    topic_syn_flag: i32,
+    pub(crate) broker_name: String,
+    pub(crate) read_queue_nums: i32,
+    pub(crate) write_queue_nums: i32,
+    pub(crate) perm: i32,
+    pub(crate) topic_syn_flag: i32,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BrokerData {
-    cluster: String,
-    broker_name: String,
-    broker_addrs: HashMap<i64, String>,
+    pub(crate) cluster: String,
+    pub(crate) broker_name: String,
+    pub(crate) broker_addrs: HashMap<i64, String>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TopicRouteData {
-    order_topic_conf: Option<String>,
-    queue_datas: Vec<QueueData>,
-    broker_datas: Vec<BrokerData>,
+    pub(crate) order_topic_conf: Option<String>,
+    
+    pub(crate) queue_datas: Vec<QueueData>,
+
+    pub(crate) broker_datas: Vec<BrokerData>,
 
     // deprecated
-    filter_server_table: HashMap<String, Vec<String>>,
+    pub(crate) filter_server_table: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug)]

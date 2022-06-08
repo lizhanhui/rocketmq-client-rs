@@ -8,7 +8,7 @@ use std::sync::atomic::{self, Ordering};
 use crate::error::{self, ClientError};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
-pub enum Language {
+pub(crate) enum Language {
     JAVA,
     CPP,
     RUST,
@@ -20,51 +20,43 @@ impl Default for Language {
     }
 }
 
-pub enum RequestCode {
-    GetRouteInfoByTopic,
-    SendMessage,
-}
 
-impl From<RequestCode> for i32 {
-    fn from(op_code: RequestCode) -> i32 {
-        match op_code {
-            RequestCode::GetRouteInfoByTopic => 105,
-            RequestCode::SendMessage => 10,
-        }
-    }
+pub(crate) enum RequestCode {
+    GetRouteInfoByTopic = 105,
+    SendMessage = 10,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Frame {
     // Operation code
-    code: i32,
+    pub(crate) code: i32,
 
     // Language of the SDK that generates this frame
-    language: Language,
+    pub(crate) language: Language,
 
     // Version of the SDK that generates this frame
-    version: i32,
+    pub(crate) version: i32,
 
     // frame identifier
-    opaque: i32,
+    pub(crate) opaque: i32,
 
     // Bit-wise flag that overrides semantics of certain fields
-    flag: i32,
+    pub(crate) flag: i32,
 
     // Human readable remarks
     #[serde(default, skip_serializing_if = "String::is_empty")]
-    remark: String,
+    pub(crate) remark: String,
 
     #[serde(skip_serializing_if = "HashMap::is_empty", default = "HashMap::new")]
-    ext_fields: HashMap<String, String>,
+    pub(crate) ext_fields: HashMap<String, String>,
 
     #[serde(skip)]
-    body: bytes::Bytes,
+    pub(crate) body: bytes::Bytes,
 }
 
 #[derive(Debug)]
-pub enum Error {
+pub(crate) enum Error {
     // Not enough data is available to parse a message
     Incomplete,
 
@@ -73,7 +65,7 @@ pub enum Error {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Type {
+pub(crate) enum Type {
     Request,
     Response,
 }
@@ -85,14 +77,14 @@ impl Frame {
         SEQUENCE.fetch_add(1, Ordering::Relaxed)
     }
 
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Frame {
             opaque: Frame::next_opaque(),
             ..Default::default()
         }
     }
 
-    pub fn check(src: &mut Cursor<&[u8]>) -> Result<(), Error> {
+    pub(crate) fn check(src: &mut Cursor<&[u8]>) -> Result<(), Error> {
         // frame-length = 4 + len(header) + len(body)
         // frame-layout |header-length|---header-data---|---body---|
         let frame_length = Frame::read_i32(src)? as usize;
@@ -106,7 +98,7 @@ impl Frame {
         Ok(())
     }
 
-    pub fn parse(src: &mut Cursor<&[u8]>) -> Result<Option<Self>, ClientError> {
+    pub(crate) fn parse(src: &mut Cursor<&[u8]>) -> Result<Option<Self>, ClientError> {
         let frame_length = Frame::read_i32(src).map_err(|_e| {
             return ClientError::InvalidFrame("Invalid frame length".to_string());
         })?;
@@ -134,7 +126,7 @@ impl Frame {
         Ok(src.get_i32())
     }
 
-    pub fn encode(&self) -> Result<Option<Bytes>, ClientError> {
+    pub(crate) fn encode(&self) -> Result<Option<Bytes>, ClientError> {
         let header = serde_json::to_vec(self).map_err(|_e| {
             return ClientError::InvalidFrame("Failed to JSON serialize frame header".to_string());
         })?;
@@ -147,34 +139,22 @@ impl Frame {
         Ok(Some(buf.into()))
     }
 
-    pub fn put_ext_field(&mut self, key: &str, value: &str) {
+    pub(crate) fn put_ext_field(&mut self, key: &str, value: &str) {
         self.ext_fields.insert(key.to_owned(), value.to_owned());
     }
 
-    pub fn set_language(&mut self, language: Language) {
-        self.language = language;
-    }
-
-    pub fn set_code(&mut self, code: RequestCode) {
-        self.code = code.into();
-    }
-
-    pub(crate) fn code(&self) -> i32 {
-        self.code
-    }
-
-    pub fn remark(&self) -> &str {
+    pub(crate) fn remark(&self) -> &str {
         self.remark.as_str()
     }
 
-    pub fn frame_type(&self) -> Type {
+    pub(crate) fn frame_type(&self) -> Type {
         if self.flag & 1 == 1 {
             return Type::Response;
         }
         Type::Request
     }
 
-    pub fn mark_response_type(&mut self) {
+    pub(crate) fn mark_response_type(&mut self) {
         self.flag |= 1;
     }
 

@@ -89,8 +89,8 @@ mod tests {
     #[tokio::test]
     async fn test_read_write_frame() -> Result<(), ClientError> {
         let mut frame = Frame::new();
-        frame.set_code(frame::RequestCode::GetRouteInfoByTopic);
-        frame.set_language(crate::frame::Language::CPP);
+        frame.code = frame::RequestCode::GetRouteInfoByTopic as i32;
+        frame.language = crate::frame::Language::CPP;
         frame.put_ext_field("topic", "T1");
         let addr = "127.0.0.1:9876";
         let endpoint: SocketAddr = addr
@@ -100,12 +100,17 @@ mod tests {
         connection.write_frame(&frame).await?;
         if let Some(response) = connection.read_frame().await? {
             assert_eq!(response.frame_type(), frame::Type::Response);
-            if 0 == response.code() {
+            if 0 == response.code {
                 let body = response.body();
                 let topic_route_data : TopicRouteData = serde_json::from_reader(body.reader()).map_err(|_e| {
                     return crate::error::ClientError::InvalidFrame("Response body is invalid JSON".to_owned());
                 })?;
-                
+                 topic_route_data.broker_datas.iter().for_each(|item| {
+                     println!("{:#?}", item);
+                 });
+                 topic_route_data.queue_datas.iter().for_each(|item| {
+                     println!("{:#?}", item);
+                 });
             }
             println!("Remark: {}", response.remark());
         }
