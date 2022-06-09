@@ -109,7 +109,7 @@ impl ConnectionManager {
 
 #[cfg(test)]
 mod tests {
-    use crate::protocol::TopicRouteData;
+    use crate::protocol::{SendMessageRequestHeader, TopicRouteData};
 
     use super::*;
     use std::net::SocketAddr;
@@ -156,6 +156,43 @@ mod tests {
             println!("Remark: {}", response.remark());
         }
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_send_message() -> Result<(), Box<dyn std::error::Error>> {
+        let mut frame = Frame::new();
+        frame.code = frame::RequestCode::SendMessage as i32;
+        frame.language = crate::frame::Language::CPP;
+        let send_message_header = SendMessageRequestHeader {
+            producer_group: String::from("Default"),
+            topic: String::from("T1"),
+            default_topic: String::from("TBW102"),
+            default_topic_queue_nums: 8,
+            queue_id: 0,
+            sys_flag: 0,
+            born_timestamp: std::time::SystemTime::now().elapsed().unwrap().as_millis() as i64,
+            flag: 0,
+            properties: None,
+            reconsume_times: None,
+            unit_mode: None,
+            batch: Some(false),
+            max_reconsume_times: None,
+        };
+        frame.add_ext_headers(send_message_header);
+        frame.body = bytes::Bytes::from("Test Body");
+        let addr = "127.0.0.1:10911";
+        let endpoint: SocketAddr = addr
+            .parse()
+            .map_err(|_e| error::ClientError::BadAddress(addr.to_string()))?;
+        let mut connection = Connection::new(&endpoint).await?;
+        connection.write_frame(&frame).await?;
+        if let Some(response) = connection.read_frame().await? {
+            assert_eq!(response.frame_type(), frame::Type::Response);
+            response.ext_fields.iter().for_each(|(k, v)| {
+                println!("{} ==> {}", k, v);
+            });
+        }
         Ok(())
     }
 }

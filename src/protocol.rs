@@ -1,6 +1,6 @@
 //!
 //! Define protocols used when talking to Apache RocketMQ servers.
-//! 
+//!
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::vec::Vec;
@@ -58,31 +58,19 @@ pub struct TopicRouteData {
 
 #[derive(Debug)]
 pub(crate) struct SendMessageRequestHeader {
-    producer_group: String,
-
-    topic: String,
-
-    default_topic: String,
-
-    default_topic_queue_nums: i32,
-
-    queue_id: i32,
-
-    sys_flag: i32,
-
-    born_timestamp: i64,
-
-    flag: i32,
-
-    properties: Option<String>,
-
-    reconsume_times: Option<i32>,
-
-    unit_mode: Option<bool>,
-
-    batch: Option<bool>,
-
-    max_reconsume_times: Option<i32>,
+    pub(crate) producer_group: String,
+    pub(crate) topic: String,
+    pub(crate) default_topic: String,
+    pub(crate) default_topic_queue_nums: i32,
+    pub(crate) queue_id: i32,
+    pub(crate) sys_flag: i32,
+    pub(crate) born_timestamp: i64,
+    pub(crate) flag: i32,
+    pub(crate) properties: Option<String>,
+    pub(crate) reconsume_times: Option<i32>,
+    pub(crate) unit_mode: Option<bool>,
+    pub(crate) batch: Option<bool>,
+    pub(crate) max_reconsume_times: Option<i32>,
 }
 
 impl From<SendMessageRequestHeader> for HashMap<String, String> {
