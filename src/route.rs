@@ -1,3 +1,6 @@
+//! 
+//! This module defines RouteManager to dynamically fetch and refresh routes for each topic in use.
+//! 
 use crate::error::ClientError;
 use crate::protocol;
 use std::collections::HashMap;

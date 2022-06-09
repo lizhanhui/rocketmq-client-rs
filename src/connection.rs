@@ -1,7 +1,7 @@
 //!
 //! This module defines connection related structs.
-//! 
-//! 
+//!
+//!
 
 use crate::error::{self, ClientError};
 use crate::frame::{self, Frame};
@@ -33,7 +33,7 @@ impl Connection {
     ///    let socket_addr = endpoint.parse::<std::net::SocketAddr>().unwrap();
     ///    let connection = rocketmq_client::connection::Connection::new(&socket_addr).await.unwrap();
     /// }
-    /// 
+    ///
     /// ```
     ///
     /// # Errors

@@ -1,3 +1,6 @@
+//!
+//! Define protocols used when talking to Apache RocketMQ servers.
+//! 
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::vec::Vec;

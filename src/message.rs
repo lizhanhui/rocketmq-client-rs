@@ -1,3 +1,6 @@
+//!
+//! Define Message struct. Application data are enveloped in `Message` before publishing to Apache RocketMQ.
+//!
 use bytes;
 use std::collections::HashMap;
 use std::vec::Vec;

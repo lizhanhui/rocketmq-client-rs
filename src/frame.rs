@@ -1,3 +1,6 @@
+//!
+//! Implement the classic length field based frame codec. Note specific frame are defined in the protocol module.
+//!
 use bytes::{self, Buf, BufMut, Bytes, BytesMut};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

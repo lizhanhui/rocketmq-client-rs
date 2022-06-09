@@ -1,3 +1,6 @@
+//!
+//! Messaging are about publishing and subscribing messages. `Publisher` is the struct to utilize to deliver message to broker.
+//!
 use crate::message::Message;
 
 struct Publisher {

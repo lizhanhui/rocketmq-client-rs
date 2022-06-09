@@ -1,3 +1,6 @@
+//!
+//! Define client side errors.
+//!
 use std::io;
 use thiserror::Error;
 
