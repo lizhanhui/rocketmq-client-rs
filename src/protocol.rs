@@ -44,7 +44,7 @@ pub struct BrokerData {
 #[serde(rename_all = "camelCase")]
 pub struct TopicRouteData {
     pub(crate) order_topic_conf: Option<String>,
-    
+
     pub(crate) queue_datas: Vec<QueueData>,
 
     pub(crate) broker_datas: Vec<BrokerData>,
@@ -55,7 +55,6 @@ pub struct TopicRouteData {
 
 #[derive(Debug)]
 pub(crate) struct SendMessageRequestHeader {
-    
     producer_group: String,
 
     topic: String,
@@ -71,7 +70,7 @@ pub(crate) struct SendMessageRequestHeader {
     born_timestamp: i64,
 
     flag: i32,
-    
+
     properties: Option<String>,
 
     reconsume_times: Option<i32>,
@@ -81,19 +80,24 @@ pub(crate) struct SendMessageRequestHeader {
     batch: Option<bool>,
 
     max_reconsume_times: Option<i32>,
-} 
+}
 
 impl From<SendMessageRequestHeader> for HashMap<String, String> {
-
     fn from(header: SendMessageRequestHeader) -> Self {
         let mut map = HashMap::new();
         map.insert("producerGroup".to_owned(), header.producer_group);
         map.insert("topic".to_owned(), header.topic);
         map.insert("defaultTopic".to_owned(), header.default_topic);
-        map.insert("defaultTopicQueueNums".to_owned(), format!("{}", header.default_topic_queue_nums));
+        map.insert(
+            "defaultTopicQueueNums".to_owned(),
+            format!("{}", header.default_topic_queue_nums),
+        );
         map.insert("queueId".to_owned(), format!("{}", header.queue_id));
         map.insert("sysFlag".to_owned(), format!("{}", header.sys_flag));
-        map.insert("bornTimestamp".to_owned(), format!("{}", header.born_timestamp));
+        map.insert(
+            "bornTimestamp".to_owned(),
+            format!("{}", header.born_timestamp),
+        );
         map.insert("flag".to_owned(), format!("{}", header.flag));
         if let Some(properties) = header.properties {
             map.insert("properties".to_owned(), properties);
@@ -112,9 +116,12 @@ impl From<SendMessageRequestHeader> for HashMap<String, String> {
         }
 
         if let Some(max_reconsume_times) = header.max_reconsume_times {
-            map.insert("maxReconsumeTimes".to_owned(), format!("{}", max_reconsume_times));
+            map.insert(
+                "maxReconsumeTimes".to_owned(),
+                format!("{}", max_reconsume_times),
+            );
         }
-        
+
         map
     }
 }

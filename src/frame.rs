@@ -20,7 +20,6 @@ impl Default for Language {
     }
 }
 
-
 pub(crate) enum RequestCode {
     GetRouteInfoByTopic = 105,
     SendMessage = 10,
@@ -168,7 +167,6 @@ impl Frame {
     pub(crate) fn body(&self) -> bytes::Bytes {
         self.body.clone()
     }
-
 }
 
 mod tests {
@@ -238,5 +236,4 @@ mod tests {
         frame.add_ext_headers(header);
         assert_eq!(frame.ext_fields.len(), 1);
     }
-
 }
